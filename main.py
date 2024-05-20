@@ -20,6 +20,12 @@ class JobSearch:
         self.driver = webdriver.Chrome(options=self.options)
         self.applications = []
 
+        self.driver.maximize_window()
+        try:
+            self.login_linkedin()
+        except:
+            self.driver.get("https://www.linkedin.com/jobs/")
+
     def login_linkedin(self):
         """Login to LinkedIn"""
 
@@ -34,9 +40,10 @@ class JobSearch:
             login_pass.clear()
             login_pass.send_keys(self.password)
             login_pass.send_keys(Keys.RETURN)
-            self.driver.get("https://www.linkedin.com/jobs")
+            # self.driver.get("https://www.linkedin.com/jobs")
 
-        except:
+        except Exception as e:
+            print('e', e)
             login_pass = self.driver.find_element(By.ID, "password")
             login_pass.clear()
             login_pass.send_keys(self.password)
@@ -51,6 +58,40 @@ class JobSearch:
         keyword_search_box.click()
         keyword_search_box.send_keys(self.keyword)
         keyword_search_box.send_keys(Keys.RETURN)
+
+    def send_messages(self):
+        """Search for jobs"""
+        self.driver.get("https://www.linkedin.com/search/results/people/?network=%5B%22F%22%5D&origin=FACETED_SEARCH&sid=UcA")
+        time.sleep(5)
+        all_button = self.driver.find_elements(By.TAG_NAME, "button")
+        msg_button = [btn for btn in all_button if btn.text == 'Message']
+        for i in range(4, 5): #Prashant Patel
+        # for i in range(2, len(msg_button)):
+            self.driver.execute_script("arguments[0].click();", msg_button[i])
+            time.sleep(2)
+            main_div = self.driver.find_element(By.XPATH, "//div[starts-with(@class, 'msg-form__msg-content-container')]")
+            self.driver.execute_script("arguments[0].click();", main_div)
+            paragraphs = self.driver.find_elements(By.TAG_NAME, "p")
+            paragraphs[-5].send_keys("Hii")
+            time.sleep(2)
+            submit = self.driver.find_element(By.XPATH, "//button[@type='submit']").click()
+            time.sleep(5)
+
+    def send_connection(self):
+        """Search for jobs"""
+        self.driver.get("https://www.linkedin.com/search/results/people/?origin=FACETED_SEARCH&sid=tbZ")
+        time.sleep(5)
+        all_button = self.driver.find_elements(By.TAG_NAME, "button")
+        print('all_button', all_button)
+        msg_button = [btn for btn in all_button if btn.text == 'Connect']
+        for i in range(2, 10):
+        # for i in range(2, len(msg_button)):
+            self.driver.execute_script("arguments[0].click();", msg_button[i])
+            time.sleep(2)
+            send_button  = self.driver.find_element(By.XPATH, "//button[starts-with(@aria-label,'Send without a note')]")
+            send_button.click()
+            time.sleep(5)
+
 
     def apply_filters(self):
         """Apply filters to job search results"""
@@ -101,15 +142,10 @@ class JobSearch:
 
     def apply_to_jobs(self):
         """Apply to job offers"""
-
-        self.driver.maximize_window()
-        try:
-            self.login_linkedin()
-        except:
-            self.driver.get("https://www.linkedin.com/jobs/")
         time.sleep(5)
-        self.search_jobs()
-        time.sleep(10)
+        # self.search_jobs()
+        # time.sleep(10)
+        # self.send_messages()
         self.apply_filters()
         self.close_session()
 
@@ -117,6 +153,14 @@ if __name__ == '__main__':
 
     with open('config.json') as config_file:
         data = json.load(config_file)
-
+    
     bot = JobSearch(data)
-    bot.apply_to_jobs()
+    # bot.send_messages()
+    '''
+    This is not functional
+    # bot.apply_filters()
+    '''
+    bot.send_connection()
+    time.sleep(5)
+    bot.close_session()
+
